@@ -1,0 +1,45 @@
+var serial;
+var portName = '/dev/cu.usbmodem1411';
+
+var tccc;
+var tcccVol;
+var form;
+var formThresh = 200;
+
+function preload() {
+  tccc = loadSound('tccc.mp3');
+}
+
+function setup() {
+  serial = new p5.SerialPort();
+  serial.on('data', serialEvent);
+  serial.on('error', serialError);
+  serial.open(portName);
+}
+
+function serialEvent() {
+  var inString = serial.readStringUntil('\r\n');
+  
+  if (inString.length > 0 ) {
+    form = inString;
+    console.log(form);
+    
+    if(form > formThresh && tccc.isPlaying() === false){
+      tccc.play();
+    } else if(form <= formThresh && tccc.isPlaying() === true) {
+      tccc.pause();
+    } else if(tccc.isPlaying() === true){
+      tcccVol = map(form,200,400,0,1);
+      tccc.setVolume(tcccVol);
+    }
+    serial.write('x');
+  }
+}
+
+function serialError(err) {
+  println('Something went wrong with the serial port. ' + err);
+}
+
+function draw() {
+  
+}
